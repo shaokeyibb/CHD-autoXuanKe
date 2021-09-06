@@ -7,6 +7,8 @@ from selenium.webdriver.remote.remote_connection import LOGGER
 from selenium import webdriver
 import time
 
+from tkinter import messagebox
+
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -97,6 +99,8 @@ def main():
 
     xuan_ke_window = driver.current_window_handle
 
+    result = dict()
+
     def xuan_ke(selected_ke):
         driver.switch_to.window(xuan_ke_window)
         selector = driver.find_element_by_xpath('/html/body/div[10]/div[2]/div[1]/table/thead/tr[1]/th[2]/div/input')
@@ -108,12 +112,15 @@ def main():
             alert = driver.switch_to.alert
             if "已满" in alert.text:
                 print("课程 " + selected_ke + " " + alert.text)
+                result[selected_ke] = alert.text
                 alert.dismiss()
             elif "冲突" in alert.text:
                 print(alert.text)
+                result[selected_ke] = alert.text
                 alert.dismiss()
             elif "提交" in alert.text:
                 print("课程 " + selected_ke + " 已提交")
+                result[selected_ke] = "已提交"
                 alert.dismiss()
             elif "重试" in alert.text:
                 driver.switch_to.window(xuan_ke_window)
@@ -123,8 +130,11 @@ def main():
             time.sleep(1)
         except NoSuchElementException:
             print("找不到课程" + selected_ke)
+            result[selected_ke] = "找不到课程"
 
     driver.switch_to.window(xuan_ke_window)
+
+    time.sleep(1)
 
     while True:
         driver.refresh()
@@ -141,6 +151,14 @@ def main():
         xuan_ke(item)
 
     driver.quit()
+
+    result_str = ""
+
+    for num in range(len(result.items())):
+        k, v = result.popitem()
+        result_str += k + ": " + v + "\n"
+
+    messagebox.showinfo("选课结果", result_str)
 
 
 if __name__ == '__main__':
