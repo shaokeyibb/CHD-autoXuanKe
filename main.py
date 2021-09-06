@@ -1,6 +1,9 @@
 import getpass
 import os
 
+import logging
+from selenium.webdriver.remote.remote_connection import LOGGER
+
 from selenium import webdriver
 import time
 
@@ -24,6 +27,8 @@ def main():
 
     select_browser = input("请告诉我们您正在使用的浏览器名称，目前可选的值有：Firefox,Chrome,Edge：")
 
+    LOGGER.setLevel(logging.FATAL)
+
     if select_browser == "Firefox":
         print("选择的浏览器：" + select_browser)
         driver = webdriver.Firefox("drivers/chromedriver.exe")
@@ -42,10 +47,6 @@ def main():
         driver.find_element_by_id(id_="username").send_keys(username)
         driver.find_element_by_id(id_="password").send_keys(password)
 
-        print("请等待...")
-
-        time.sleep(3)
-
         captcha = driver.find_element_by_id(id_="captchaDiv")
         captcha_class = captcha.get_attribute("class")
         captcha_style = captcha.get_attribute("style")
@@ -53,8 +54,6 @@ def main():
         if "display: none;" not in captcha_style and "hide" not in captcha_class:
             captcha = input("检测到了需要提供验证码，请输入正确的验证码，然后在这里按回车键继续：")
             driver.find_element_by_id(id_="captcha").send_keys(captcha)
-
-        time.sleep(3)
 
         driver.find_element_by_id(id_="login_submit").click()
 
@@ -67,10 +66,13 @@ def main():
 
     login()
 
-    if "您提供的用户名或者密码有误" in driver.find_element_by_id("showErrorTip").text:
-        print("用户名或密码错误，停止程序...")
-        driver.quit()
-        exit(0)
+    try:
+        if "您提供的用户名或者密码有误" in driver.find_element_by_id("showErrorTip").text:
+            print("用户名或密码错误，停止程序...")
+            driver.quit()
+            exit(0)
+    except NoSuchElementException:
+        print("校验通过")
 
     try:
         WebDriverWait(driver, 1).until_not(
