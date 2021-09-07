@@ -121,7 +121,7 @@ def main():
             elif "提交" in alert.text:
                 print("课程 " + selected_ke + " 已提交")
                 result[selected_ke] = "已提交"
-                alert.dismiss()
+                alert.accept()
             elif "重试" in alert.text:
                 driver.switch_to.window(xuan_ke_window)
                 print("网络出现问题，正在重新选课中...")
